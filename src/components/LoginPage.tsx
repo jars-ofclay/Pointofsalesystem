@@ -141,38 +141,6 @@ export function LoginPage({ onLogin, onGoToSignUp }: LoginPageProps) {
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
-
-            {/* Backend Status */}
-            <div className="mt-5">
-              {backendStatus === 'connected' && (
-                <div className="p-3 bg-[#E8F5D4] rounded-xl border border-[#C8E6A0] flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[#4A7C3A] rounded-full animate-pulse"></div>
-                  <CheckCircle2 className="size-4 text-[#4A7C3A]" />
-                  <span className="text-[#2D5016]">Backend connected</span>
-                </div>
-              )}
-              {backendStatus === 'error' && (
-                <div className="p-3 bg-red-50 rounded-xl border border-red-200 flex items-center gap-2">
-                  <AlertCircle className="size-4 text-red-600" />
-                  <span className="text-red-700">Backend connection failed</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Demo Credentials */}
-          <div className="bg-[#F5F9F2] px-8 py-5 border-t border-[#D4E7C5]">
-            <p className="text-[#2D5016] mb-2">Demo Credentials:</p>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#4A7C3A]"></div>
-                <span className="text-[#5B7A4A]">Admin: <span className="text-[#2D5016]">admin / admin123</span></span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#7BA568]"></div>
-                <span className="text-[#5B7A4A]">Cashier: <span className="text-[#2D5016]">cashier / cashier123</span></span>
-              </div>
-            </div>
           </div>
         </div>
 
