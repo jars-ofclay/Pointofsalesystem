@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from './ui/alert';
-import groceryImage from 'figma:asset/9862d012458576518fbe9d4dc78e607024345e07.png';
+import logo from 'figma:asset/8c32421308dbead2a9bc5c95bda6fc66a5652a08.png';
 
 interface SignUpPageProps {
   onSignUp: (username: string, email: string, password: string, role: 'admin' | 'cashier') => Promise<void>;
@@ -65,34 +65,53 @@ export function SignUpPage({ onSignUp, onBackToLogin }: SignUpPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-l from-[#d1edc5] from-[49%] to-white">
-      <div className="flex w-full h-screen max-w-7xl mx-auto">
-        {/* Left side - Grocery Image */}
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
-          <img 
-            src={groceryImage} 
-            alt="Grocery bag with fresh produce" 
-            className="max-w-lg w-full h-auto object-contain"
-          />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FAFBF8] via-[#F5F9F2] to-[#E8F5D4]">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-64 h-64 bg-[#C8E6A0]/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#4A7C3A]/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-md mx-auto px-6">
+        {/* Logo and Header */}
+        <div className="text-center mb-8">
+          <div className="inline-block mb-4">
+            <div className="relative">
+              <img 
+                src={logo} 
+                alt="Point of Sale Logo" 
+                className="w-40 h-40 mx-auto drop-shadow-lg object-contain"
+                style={{ mixBlendMode: 'multiply' }}
+              />
+            </div>
+          </div>
+          <h1 className="text-[#2D5016] mb-2">Create Account</h1>
+          <p className="text-[#5B7A4A]">
+            Already have an account?{' '}
+            <button 
+              onClick={onBackToLogin} 
+              className="text-[#4A7C3A] hover:text-[#2D5016] transition-colors"
+            >
+              Log in
+            </button>
+          </p>
         </div>
 
-        {/* Right side - Sign Up Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-          <div className="w-full max-w-md">
-            <h1 className="text-5xl text-[#449c56] mb-2">POS Sign up</h1>
-            <p className="text-gray-800 mb-8">
-              Already have an account? <button onClick={onBackToLogin} className="text-gray-800 hover:text-gray-600 transition-colors">Log in</button>
-            </p>
-
+        {/* Sign Up Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-[#D4E7C5] overflow-hidden">
+          {/* Decorative top bar */}
+          <div className="h-2 bg-gradient-to-r from-[#4A7C3A] via-[#5B8A47] to-[#C8E6A0]"></div>
+          
+          <div className="p-8">
             {/* Role Toggle Buttons */}
             <div className="flex gap-3 mb-6">
               <button
                 type="button"
                 onClick={() => setSelectedRole('admin')}
-                className={`flex-1 py-3 px-6 rounded-full transition-all border border-[#3f9651] ${
+                className={`flex-1 py-3 px-6 rounded-xl transition-all border-2 ${
                   selectedRole === 'admin'
-                    ? 'bg-[#3f9651] text-white'
-                    : 'bg-white text-gray-800'
+                    ? 'bg-gradient-to-r from-[#4A7C3A] to-[#5B8A47] text-white border-[#4A7C3A] shadow-lg shadow-[#4A7C3A]/20'
+                    : 'bg-white text-[#2D5016] border-[#D4E7C5] hover:bg-[#E8F5D4] hover:border-[#4A7C3A]'
                 }`}
               >
                 Admin
@@ -100,10 +119,10 @@ export function SignUpPage({ onSignUp, onBackToLogin }: SignUpPageProps) {
               <button
                 type="button"
                 onClick={() => setSelectedRole('cashier')}
-                className={`flex-1 py-3 px-6 rounded-full transition-all border border-[#3f9651] ${
+                className={`flex-1 py-3 px-6 rounded-xl transition-all border-2 ${
                   selectedRole === 'cashier'
-                    ? 'bg-[#3f9651] text-white'
-                    : 'bg-white text-gray-800'
+                    ? 'bg-gradient-to-r from-[#4A7C3A] to-[#5B8A47] text-white border-[#4A7C3A] shadow-lg shadow-[#4A7C3A]/20'
+                    : 'bg-white text-[#2D5016] border-[#D4E7C5] hover:bg-[#E8F5D4] hover:border-[#4A7C3A]'
                 }`}
               >
                 Cashier
@@ -112,67 +131,75 @@ export function SignUpPage({ onSignUp, onBackToLogin }: SignUpPageProps) {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="border-red-200 bg-red-50">
                   <AlertCircle className="size-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
               {success && (
-                <Alert className="bg-green-50 border-green-200">
-                  <CheckCircle className="size-4 text-green-600" />
-                  <AlertDescription className="text-green-800">
+                <Alert className="bg-[#E8F5D4] border-[#C8E6A0]">
+                  <CheckCircle className="size-4 text-[#4A7C3A]" />
+                  <AlertDescription className="text-[#2D5016]">
                     Account created successfully! Redirecting to login...
                   </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
+                <label htmlFor="username" className="text-[#2D5016]">Username</label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Username"
+                  placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full py-6 px-5 rounded-2xl border-2 border-[#3f9651] bg-white text-gray-700 placeholder:text-gray-400 placeholder:opacity-30"
+                  className="w-full h-12 px-4 rounded-xl border-2 border-[#D4E7C5] bg-[#FAFBF8] text-[#2D5016] placeholder:text-[#5B7A4A]/50 focus:border-[#4A7C3A] focus:ring-2 focus:ring-[#4A7C3A]/20 transition-all"
                 />
               </div>
 
               <div className="space-y-2">
+                <label htmlFor="email" className="text-[#2D5016]">Email</label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Email"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full py-6 px-5 rounded-2xl border-2 border-[#3f9651] bg-white text-gray-700 placeholder:text-gray-400 placeholder:opacity-30"
+                  className="w-full h-12 px-4 rounded-xl border-2 border-[#D4E7C5] bg-[#FAFBF8] text-[#2D5016] placeholder:text-[#5B7A4A]/50 focus:border-[#4A7C3A] focus:ring-2 focus:ring-[#4A7C3A]/20 transition-all"
                 />
               </div>
 
               <div className="space-y-2">
+                <label htmlFor="password" className="text-[#2D5016]">Password</label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Enter your password (min. 6 characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full py-6 px-5 rounded-2xl border-2 border-[#3f9651] bg-white text-gray-700 placeholder:text-gray-400 placeholder:opacity-30"
+                  className="w-full h-12 px-4 rounded-xl border-2 border-[#D4E7C5] bg-[#FAFBF8] text-[#2D5016] placeholder:text-[#5B7A4A]/50 focus:border-[#4A7C3A] focus:ring-2 focus:ring-[#4A7C3A]/20 transition-all"
                 />
               </div>
 
               <Button 
                 type="submit" 
                 disabled={isLoading}
-                className="w-full bg-[#3f9651] hover:bg-[#2d7a3d] text-white py-6 rounded-full text-lg disabled:opacity-50"
+                className="w-full h-12 bg-gradient-to-r from-[#4A7C3A] to-[#5B8A47] hover:from-[#3D6B2F] hover:to-[#4A7C3A] text-white rounded-xl shadow-lg shadow-[#4A7C3A]/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Creating account...' : 'Sign up'}
               </Button>
             </form>
           </div>
         </div>
+
+        {/* Footer text */}
+        <p className="text-center mt-6 text-[#5B7A4A]">
+          Powered by Alok Dixit's POS System
+        </p>
       </div>
     </div>
   );
