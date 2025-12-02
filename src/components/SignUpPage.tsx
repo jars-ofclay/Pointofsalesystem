@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import groceryImage from 'figma:asset/9862d012458576518fbe9d4dc78e607024345e07.png';
 
 interface SignUpPageProps {
-  onSignUp: (username: string, email: string, password: string, role: 'admin' | 'cashier') => void;
+  onSignUp: (username: string, email: string, password: string, role: 'admin' | 'cashier') => Promise<void>;
   onBackToLogin: () => void;
 }
 
@@ -19,8 +19,9 @@ export function SignUpPage({ onSignUp, onBackToLogin }: SignUpPageProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>('admin');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
@@ -41,19 +42,26 @@ export function SignUpPage({ onSignUp, onBackToLogin }: SignUpPageProps) {
       return;
     }
 
-    // Call the sign-up handler
-    onSignUp(username, email, password, selectedRole);
-    setSuccess(true);
-    
-    // Clear form
-    setUsername('');
-    setEmail('');
-    setPassword('');
-    
-    // Redirect to login after 2 seconds
-    setTimeout(() => {
-      onBackToLogin();
-    }, 2000);
+    setIsLoading(true);
+    try {
+      // Call the sign-up handler
+      await onSignUp(username, email, password, selectedRole);
+      setSuccess(true);
+      
+      // Clear form
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        onBackToLogin();
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message || 'Sign up failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -157,9 +165,10 @@ export function SignUpPage({ onSignUp, onBackToLogin }: SignUpPageProps) {
 
               <Button 
                 type="submit" 
-                className="w-full bg-[#3f9651] hover:bg-[#2d7a3d] text-white py-6 rounded-full text-lg"
+                disabled={isLoading}
+                className="w-full bg-[#3f9651] hover:bg-[#2d7a3d] text-white py-6 rounded-full text-lg disabled:opacity-50"
               >
-                Sign up
+                {isLoading ? 'Creating account...' : 'Sign up'}
               </Button>
             </form>
           </div>

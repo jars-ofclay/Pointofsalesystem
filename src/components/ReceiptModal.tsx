@@ -1,5 +1,5 @@
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { SaleItem } from '../App';
 import { Printer, X } from 'lucide-react';
 
@@ -33,6 +33,9 @@ export function ReceiptModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Receipt</DialogTitle>
+          <DialogDescription>
+            Transaction receipt - {receiptNumber}
+          </DialogDescription>
         </DialogHeader>
 
         <div id="receipt" className="bg-white p-6 space-y-4">

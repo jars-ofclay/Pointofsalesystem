@@ -5,7 +5,8 @@ import { User, Product, Sale } from '../App';
 import { InventoryManagement } from './InventoryManagement';
 import { ReportsPage } from './ReportsPage';
 import { SalesTransaction } from './SalesTransaction';
-import { LogOut, LayoutDashboard, Package, FileText, ShoppingCart } from 'lucide-react';
+import { LogOut, LayoutDashboard, Package, FileText, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
+import logo from 'figma:asset/8c32421308dbead2a9bc5c95bda6fc66a5652a08.png';
 
 interface AdminDashboardProps {
   user: User;
@@ -13,7 +14,9 @@ interface AdminDashboardProps {
   sales: Sale[];
   onLogout: () => void;
   onUpdateProducts: (products: Product[]) => void;
-  onAddSale: (sale: Sale) => void;
+  onAddProduct: (product: Omit<Product, 'id'>) => Promise<Product>;
+  onUpdateProduct: (id: string, updates: Partial<Product>) => Promise<Product>;
+  onAddSale: (sale: any) => Promise<Sale>;
 }
 
 export function AdminDashboard({ 
@@ -22,6 +25,8 @@ export function AdminDashboard({
   sales, 
   onLogout, 
   onUpdateProducts,
+  onAddProduct,
+  onUpdateProduct,
   onAddSale 
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
@@ -36,21 +41,28 @@ export function AdminDashboard({
   const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-[#FAFBF8] to-[#F5F9F2]">
       {/* Header */}
-      <header className="bg-white border-b border-[#D1EDC5] sticky top-0 z-10 shadow-sm">
+      <header className="bg-white border-b-2 border-[#D4E7C5] sticky top-0 z-10 shadow-sm backdrop-blur-sm bg-white/95">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-[#D1EDC5] to-[#a8dfa0] p-2 rounded-xl">
-                <LayoutDashboard className="size-6 text-[#1a5a1a]" />
-              </div>
-              <div>
-                <h1 className="text-xl text-[#1a5a1a]">Admin Dashboard</h1>
-                <p className="text-sm text-gray-600">Welcome, {user.name}</p>
+              <img 
+                src={logo} 
+                alt="POS Logo" 
+                className="w-16 h-16 object-contain"
+                style={{ mixBlendMode: 'multiply' }}
+              />
+              <div className="border-l-2 border-[#D4E7C5] pl-4">
+                <h1 className="text-[#2D5016]">Admin Dashboard</h1>
+                <p className="text-[#5B7A4A]">Welcome, {user.name}</p>
               </div>
             </div>
-            <Button variant="outline" onClick={onLogout} className="border-[#D1EDC5] text-[#1a5a1a] hover:bg-[#f0f9ed]">
+            <Button 
+              variant="outline" 
+              onClick={onLogout} 
+              className="border-2 border-[#D4E7C5] text-[#2D5016] hover:bg-[#E8F5D4] hover:border-[#4A7C3A] transition-all"
+            >
               <LogOut className="size-4 mr-2" />
               Logout
             </Button>
@@ -61,20 +73,32 @@ export function AdminDashboard({
       {/* Main Content */}
       <div className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 bg-white border border-[#D1EDC5]">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-[#D1EDC5] data-[state=active]:text-[#1a5a1a]">
+          <TabsList className="mb-6 bg-white border-2 border-[#D4E7C5] p-1 rounded-xl shadow-sm">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#4A7C3A] data-[state=active]:to-[#5B8A47] data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
+            >
               <LayoutDashboard className="size-4 mr-2" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="pos" className="data-[state=active]:bg-[#D1EDC5] data-[state=active]:text-[#1a5a1a]">
+            <TabsTrigger 
+              value="pos" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#4A7C3A] data-[state=active]:to-[#5B8A47] data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
+            >
               <ShoppingCart className="size-4 mr-2" />
               POS
             </TabsTrigger>
-            <TabsTrigger value="inventory" className="data-[state=active]:bg-[#D1EDC5] data-[state=active]:text-[#1a5a1a]">
+            <TabsTrigger 
+              value="inventory" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#4A7C3A] data-[state=active]:to-[#5B8A47] data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
+            >
               <Package className="size-4 mr-2" />
               Inventory
             </TabsTrigger>
-            <TabsTrigger value="reports" className="data-[state=active]:bg-[#D1EDC5] data-[state=active]:text-[#1a5a1a]">
+            <TabsTrigger 
+              value="reports" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#4A7C3A] data-[state=active]:to-[#5B8A47] data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
+            >
               <FileText className="size-4 mr-2" />
               Reports
             </TabsTrigger>
@@ -83,35 +107,67 @@ export function AdminDashboard({
           <TabsContent value="overview" className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-6 rounded-xl border border-[#D1EDC5] shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-sm text-gray-600 mb-1">Total Products</div>
-                <div className="text-3xl text-[#1a5a1a]">{products.length}</div>
+              <div className="bg-white p-6 rounded-2xl border-2 border-[#D4E7C5] shadow-sm hover:shadow-lg hover:border-[#C8E6A0] transition-all group">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[#5B7A4A]">Total Products</div>
+                  <Package className="size-5 text-[#7BA568] group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="text-[#2D5016]">{products.length}</div>
+                <div className="w-full h-1 bg-[#E8F5D4] rounded-full mt-3">
+                  <div className="h-1 bg-gradient-to-r from-[#4A7C3A] to-[#7BA568] rounded-full w-3/4"></div>
+                </div>
               </div>
               
-              <div className="bg-white p-6 rounded-xl border border-red-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-sm text-gray-600 mb-1">Low Stock Items</div>
-                <div className="text-3xl text-red-600">{lowStockProducts.length}</div>
+              <div className="bg-white p-6 rounded-2xl border-2 border-red-200 shadow-sm hover:shadow-lg hover:border-red-300 transition-all group">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[#5B7A4A]">Low Stock Items</div>
+                  <AlertTriangle className="size-5 text-red-500 group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="text-red-600">{lowStockProducts.length}</div>
+                <div className="w-full h-1 bg-red-100 rounded-full mt-3">
+                  <div className="h-1 bg-gradient-to-r from-red-500 to-red-400 rounded-full" style={{width: `${Math.min((lowStockProducts.length / products.length) * 100, 100)}%`}}></div>
+                </div>
               </div>
               
-              <div className="bg-white p-6 rounded-xl border border-[#D1EDC5] shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-sm text-gray-600 mb-1">Today's Sales</div>
-                <div className="text-3xl text-[#1a5a1a]">{todaySales.length}</div>
+              <div className="bg-white p-6 rounded-2xl border-2 border-[#D4E7C5] shadow-sm hover:shadow-lg hover:border-[#C8E6A0] transition-all group">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[#5B7A4A]">Today's Sales</div>
+                  <ShoppingCart className="size-5 text-[#7BA568] group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="text-[#2D5016]">{todaySales.length}</div>
+                <div className="w-full h-1 bg-[#E8F5D4] rounded-full mt-3">
+                  <div className="h-1 bg-gradient-to-r from-[#4A7C3A] to-[#7BA568] rounded-full w-2/3"></div>
+                </div>
               </div>
               
-              <div className="bg-gradient-to-br from-[#D1EDC5] to-[#a8dfa0] p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-sm text-[#1a5a1a] mb-1">Today's Revenue</div>
-                <div className="text-3xl text-[#1a5a1a]">₱{todayRevenue.toFixed(2)}</div>
+              <div className="bg-gradient-to-br from-[#4A7C3A] to-[#5B8A47] p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all group">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-white/90">Today's Revenue</div>
+                  <TrendingUp className="size-5 text-white group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="text-white">₱{todayRevenue.toFixed(2)}</div>
+                <div className="w-full h-1 bg-white/30 rounded-full mt-3">
+                  <div className="h-1 bg-white rounded-full w-4/5"></div>
+                </div>
               </div>
             </div>
 
             {/* Low Stock Alert */}
             {lowStockProducts.length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
-                <h3 className="text-red-900 mb-2">Low Stock Alert</h3>
-                <div className="space-y-1">
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-red-100 rounded-xl">
+                    <AlertTriangle className="size-5 text-red-600" />
+                  </div>
+                  <h3 className="text-red-900">Low Stock Alert</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {lowStockProducts.map(product => (
-                    <div key={product.id} className="text-sm text-red-800">
-                      {product.name}: {product.stock} units remaining (Min: {product.minStock})
+                    <div key={product.id} className="flex items-center justify-between bg-white p-3 rounded-xl border border-red-100">
+                      <span className="text-[#2D5016]">{product.name}</span>
+                      <span className="text-red-600">
+                        {product.stock} / {product.minStock} units
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -119,22 +175,29 @@ export function AdminDashboard({
             )}
 
             {/* Recent Sales */}
-            <div className="bg-white rounded-xl border border-[#D1EDC5] p-6 shadow-sm">
-              <h3 className="text-[#1a5a1a] mb-4">Recent Sales</h3>
+            <div className="bg-white rounded-2xl border-2 border-[#D4E7C5] p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-[#E8F5D4] rounded-xl">
+                  <ShoppingCart className="size-5 text-[#4A7C3A]" />
+                </div>
+                <h3 className="text-[#2D5016]">Recent Sales</h3>
+              </div>
               <div className="space-y-3">
                 {sales.slice(0, 5).map(sale => (
-                  <div key={sale.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                  <div key={sale.id} className="flex justify-between items-center p-3 rounded-xl hover:bg-[#F5F9F2] transition-colors border border-transparent hover:border-[#D4E7C5]">
                     <div>
-                      <div className="text-sm text-gray-900">{sale.receiptNumber}</div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(sale.timestamp).toLocaleString()} - {sale.cashierName}
+                      <div className="text-[#2D5016]">{sale.receiptNumber}</div>
+                      <div className="text-[#5B7A4A]">
+                        {new Date(sale.timestamp).toLocaleString()} • {sale.cashierName}
                       </div>
                     </div>
-                    <div className="text-[#1a5a1a]">₱{sale.total.toFixed(2)}</div>
+                    <div className="text-[#4A7C3A] px-3 py-1 bg-[#E8F5D4] rounded-lg">
+                      ₱{sale.total.toFixed(2)}
+                    </div>
                   </div>
                 ))}
                 {sales.length === 0 && (
-                  <p className="text-sm text-gray-500">No sales yet</p>
+                  <p className="text-[#5B7A4A] text-center py-8">No sales yet</p>
                 )}
               </div>
             </div>
@@ -152,6 +215,8 @@ export function AdminDashboard({
             <InventoryManagement
               products={products}
               onUpdateProducts={onUpdateProducts}
+              onAddProduct={onAddProduct}
+              onUpdateProduct={onUpdateProduct}
             />
           </TabsContent>
 

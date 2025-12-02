@@ -3,6 +3,8 @@ import { LoginPage } from './components/LoginPage';
 import { SignUpPage } from './components/SignUpPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { CashierInterface } from './components/CashierInterface';
+import { BackendStatus } from './components/BackendStatus';
+import { authAPI, productsAPI, salesAPI, initializeDemoData, healthCheck, setAccessToken } from './utils/api';
 
 export interface User {
   id: string;
@@ -40,84 +42,88 @@ export interface Sale {
   receiptNumber: string;
 }
 
-// Demo users
-const INITIAL_USERS = [
-  { id: '1', username: 'admin', password: 'admin123', role: 'admin' as const, name: 'Erica Monacillo', email: 'admin@pos.com' },
-  { id: '2', username: 'cashier', password: 'cashier123', role: 'cashier' as const, name: 'Jars Christian Lerio', email: 'cashier@pos.com' }
-];
-
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [registeredUsers, setRegisteredUsers] = useState(INITIAL_USERS);
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: '1',
-      name: 'Rice 25kg',
-      category: 'Groceries',
-      price: 1250,
-      stock: 50,
-      barcode: '8901234567890',
-      minStock: 10
-    },
-    {
-      id: '2',
-      name: 'Cooking Oil 1L',
-      category: 'Groceries',
-      price: 180,
-      stock: 30,
-      barcode: '8901234567891',
-      minStock: 5
-    },
-    {
-      id: '3',
-      name: 'Sugar 1kg',
-      category: 'Groceries',
-      price: 65,
-      stock: 45,
-      barcode: '8901234567892',
-      minStock: 10
-    },
-    {
-      id: '4',
-      name: 'Coffee 3-in-1 Pack',
-      category: 'Beverages',
-      price: 120,
-      stock: 60,
-      barcode: '8901234567893',
-      minStock: 15
-    },
-    {
-      id: '5',
-      name: 'Instant Noodles Pack',
-      category: 'Food',
-      price: 85,
-      stock: 100,
-      barcode: '8901234567894',
-      minStock: 20
-    }
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    setShowSignUp(false);
+  // Initialize app and check for existing session
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Check backend health
+        const health = await healthCheck();
+        console.log('Backend health:', health);
+
+        // Initialize demo data if needed (only once)
+        const initialized = localStorage.getItem('pos_initialized');
+        if (!initialized) {
+          console.log('Initializing demo data...');
+          await initializeDemoData();
+          localStorage.setItem('pos_initialized', 'true');
+          console.log('Demo data initialized successfully');
+        }
+
+        // Check for existing session
+        const { success, user } = await authAPI.verify();
+        if (success && user) {
+          setCurrentUser(user);
+          await loadData();
+        }
+      } catch (error) {
+        console.error('App initialization error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeApp();
+  }, []);
+
+  // Load products and sales
+  const loadData = async () => {
+    try {
+      const [productsData, salesData] = await Promise.all([
+        productsAPI.getAll(),
+        salesAPI.getAll()
+      ]);
+      
+      setProducts(productsData);
+      setSales(salesData);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    }
+  };
+
+  const handleLogin = async (username: string, password: string) => {
+    try {
+      const { user } = await authAPI.login(username, password);
+      setCurrentUser(user);
+      setShowSignUp(false);
+      await loadData();
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const handleLogout = () => {
+    authAPI.logout();
     setCurrentUser(null);
+    setProducts([]);
+    setSales([]);
   };
 
-  const handleSignUp = (username: string, email: string, password: string, role: 'admin' | 'cashier') => {
-    const newUser = {
-      id: (registeredUsers.length + 1).toString(),
-      username,
-      email,
-      password,
-      role,
-      name: username.charAt(0).toUpperCase() + username.slice(1)
-    };
-    setRegisteredUsers([...registeredUsers, newUser]);
+  const handleSignUp = async (username: string, email: string, password: string, role: 'admin' | 'cashier') => {
+    try {
+      const name = username.charAt(0).toUpperCase() + username.slice(1);
+      await authAPI.signup(username, email, password, role, name);
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
   };
 
   const handleGoToSignUp = () => {
@@ -128,54 +134,92 @@ function App() {
     setShowSignUp(false);
   };
 
-  const handleUpdateProducts = (updatedProducts: Product[]) => {
+  const handleUpdateProducts = async (updatedProducts: Product[]) => {
     setProducts(updatedProducts);
   };
 
-  const handleAddSale = (sale: Sale) => {
-    setSales(prev => [sale, ...prev]);
-    
-    // Update inventory
-    const updatedProducts = products.map(product => {
-      const saleItem = sale.items.find(item => item.productId === product.id);
-      if (saleItem) {
-        return {
-          ...product,
-          stock: product.stock - saleItem.quantity
-        };
-      }
-      return product;
-    });
-    setProducts(updatedProducts);
+  const handleAddProduct = async (product: Omit<Product, 'id'>) => {
+    try {
+      const newProduct = await productsAPI.create(product);
+      setProducts(prev => [...prev, newProduct]);
+      return newProduct;
+    } catch (error) {
+      console.error('Failed to add product:', error);
+      throw error;
+    }
   };
+
+  const handleUpdateProduct = async (id: string, updates: Partial<Product>) => {
+    try {
+      const updatedProduct = await productsAPI.update(id, updates);
+      setProducts(prev => prev.map(p => p.id === id ? updatedProduct : p));
+      return updatedProduct;
+    } catch (error) {
+      console.error('Failed to update product:', error);
+      throw error;
+    }
+  };
+
+  const handleAddSale = async (saleData: Omit<Sale, 'id' | 'receiptNumber' | 'timestamp'>) => {
+    try {
+      const newSale = await salesAPI.create(saleData);
+      setSales(prev => [newSale, ...prev]);
+      
+      // Reload products to get updated stock
+      const updatedProducts = await productsAPI.getAll();
+      setProducts(updatedProducts);
+      
+      return newSale;
+    } catch (error) {
+      console.error('Failed to add sale:', error);
+      throw error;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f9ed 0%, #ffffff 100%)' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1a5a1a] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Connecting to backend...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     if (showSignUp) {
       return <SignUpPage onSignUp={handleSignUp} onBackToLogin={handleBackToLogin} />;
     }
-    return <LoginPage onLogin={handleLogin} onGoToSignUp={handleGoToSignUp} registeredUsers={registeredUsers} />;
+    return <LoginPage onLogin={handleLogin} onGoToSignUp={handleGoToSignUp} />;
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #f0f9ed 0%, #ffffff 100%)' }}>
-      {currentUser.role === 'admin' ? (
-        <AdminDashboard
-          user={currentUser}
-          products={products}
-          sales={sales}
-          onLogout={handleLogout}
-          onUpdateProducts={handleUpdateProducts}
-          onAddSale={handleAddSale}
-        />
-      ) : (
-        <CashierInterface
-          user={currentUser}
-          products={products}
-          onLogout={handleLogout}
-          onAddSale={handleAddSale}
-        />
-      )}
-    </div>
+    <>
+      <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #f0f9ed 0%, #ffffff 100%)' }}>
+        {currentUser.role === 'admin' ? (
+          <AdminDashboard
+            user={currentUser}
+            products={products}
+            sales={sales}
+            onLogout={handleLogout}
+            onUpdateProducts={handleUpdateProducts}
+            onAddProduct={handleAddProduct}
+            onUpdateProduct={handleUpdateProduct}
+            onAddSale={handleAddSale}
+          />
+        ) : (
+          <CashierInterface
+            user={currentUser}
+            products={products}
+            sales={sales}
+            onLogout={handleLogout}
+            onAddSale={handleAddSale}
+          />
+        )}
+      </div>
+      <BackendStatus />
+    </>
   );
 }
 

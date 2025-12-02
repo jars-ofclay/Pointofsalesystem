@@ -10,7 +10,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 interface SalesTransactionProps {
   user: User;
   products: Product[];
-  onAddSale: (sale: Sale) => void;
+  onAddSale: (sale: any) => Promise<Sale>;
 }
 
 const CATEGORY_DATA = [
@@ -164,22 +164,23 @@ export function SalesTransaction({ user, products, onAddSale }: SalesTransaction
     setShowPaymentModal(true);
   };
 
-  const handlePaymentComplete = (paymentMethod: string) => {
-    const receiptNumber = `RCP-${Date.now()}`;
-    const sale: Sale = {
-      id: Date.now().toString(),
+  const handlePaymentComplete = async (paymentMethod: string) => {
+    const saleData = {
       items: cart,
       total: calculateTotal(),
       paymentMethod,
       cashierId: user.id,
-      cashierName: user.name,
-      timestamp: new Date(),
-      receiptNumber
+      cashierName: user.name
     };
 
-    onAddSale(sale);
-    clearCart();
-    setShowPaymentModal(false);
+    try {
+      await onAddSale(saleData);
+      clearCart();
+      setShowPaymentModal(false);
+    } catch (error) {
+      console.error('Payment failed:', error);
+      alert('Payment failed. Please try again.');
+    }
   };
 
   return (

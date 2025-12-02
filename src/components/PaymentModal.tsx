@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { SaleItem } from '../App';
 import { CreditCard, Wallet, DollarSign, Receipt } from 'lucide-react';
@@ -80,6 +80,9 @@ export function PaymentModal({ total, cart, cashierName, onClose, onPaymentCompl
       <DialogContent className="max-w-md border-[#D1EDC5]">
         <DialogHeader>
           <DialogTitle className="text-[#1a5a1a]">Payment</DialogTitle>
+          <DialogDescription>
+            Select a payment method and complete the transaction.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="mb-4 p-4 bg-gradient-to-r from-[#D1EDC5] to-[#a8dfa0] rounded-xl">

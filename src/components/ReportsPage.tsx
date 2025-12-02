@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Sale, Product } from '../App';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Package, DollarSign, ShoppingCart } from 'lucide-react';
+import { TrendingUp, Package, DollarSign, ShoppingCart, Receipt, Clock, User, CreditCard } from 'lucide-react';
 
 interface ReportsPageProps {
   sales: Sale[];
@@ -12,6 +13,13 @@ interface ReportsPageProps {
 
 export function ReportsPage({ sales, products }: ReportsPageProps) {
   const [reportPeriod, setReportPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+
+  const handleSaleClick = (sale: Sale) => {
+    setSelectedSale(sale);
+    setShowDetailDialog(true);
+  };
 
   // Calculate statistics
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
@@ -262,6 +270,65 @@ export function ReportsPage({ sales, products }: ReportsPageProps) {
         </Card>
       </div>
 
+      {/* Transaction History */}
+      <Card className="border-[#D1EDC5] shadow-sm">
+        <CardHeader className="bg-gradient-to-r from-[#f0f9ed] to-white border-b border-[#D1EDC5]">
+          <CardTitle className="text-[#1a5a1a]">Transaction History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 text-gray-600">Receipt #</th>
+                  <th className="text-left py-3 px-4 text-gray-600">Date & Time</th>
+                  <th className="text-left py-3 px-4 text-gray-600">Cashier</th>
+                  <th className="text-left py-3 px-4 text-gray-600">Payment Method</th>
+                  <th className="text-right py-3 px-4 text-gray-600">Items</th>
+                  <th className="text-right py-3 px-4 text-gray-600">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.length > 0 ? (
+                  sales.slice().reverse().map(sale => (
+                    <tr 
+                      key={sale.id} 
+                      className="border-b border-gray-100 hover:bg-[#f0f9ed] cursor-pointer transition-colors"
+                      onClick={() => handleSaleClick(sale)}
+                    >
+                      <td className="py-3 px-4 text-gray-900">{sale.receiptNumber}</td>
+                      <td className="py-3 px-4 text-gray-600">
+                        {new Date(sale.timestamp).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+                      <td className="py-3 px-4 text-gray-600">{sale.cashierName}</td>
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+                          {sale.paymentMethod}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right text-gray-900">{sale.items.length}</td>
+                      <td className="py-3 px-4 text-right text-[#1a5a1a]">₱{sale.total.toFixed(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-gray-500">
+                      No transactions yet
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Inventory Summary */}
       <Card className="border-[#D1EDC5] shadow-sm">
         <CardHeader className="bg-gradient-to-r from-[#f0f9ed] to-white border-b border-[#D1EDC5]">
@@ -306,6 +373,109 @@ export function ReportsPage({ sales, products }: ReportsPageProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Transaction Detail Dialog */}
+      {selectedSale && (
+        <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-[#1a5a1a]">Transaction Details</DialogTitle>
+              <DialogDescription>
+                Complete transaction information for {selectedSale.receiptNumber}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Transaction Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Receipt className="size-4 text-gray-400" />
+                    <div>
+                      <div className="text-xs text-gray-500">Receipt Number</div>
+                      <div className="text-gray-900">{selectedSale.receiptNumber}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="size-4 text-gray-400" />
+                    <div>
+                      <div className="text-xs text-gray-500">Date & Time</div>
+                      <div className="text-gray-900">
+                        {new Date(selectedSale.timestamp).toLocaleString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="size-4 text-gray-400" />
+                    <div>
+                      <div className="text-xs text-gray-500">Cashier</div>
+                      <div className="text-gray-900">{selectedSale.cashierName}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CreditCard className="size-4 text-gray-400" />
+                    <div>
+                      <div className="text-xs text-gray-500">Payment Method</div>
+                      <div className="text-gray-900">{selectedSale.paymentMethod}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div className="border border-[#D1EDC5] rounded-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-[#f0f9ed] to-white px-4 py-3 border-b border-[#D1EDC5]">
+                  <h3 className="text-[#1a5a1a]">Items Purchased</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-50">
+                        <th className="text-left py-3 px-4 text-xs text-gray-600">Product</th>
+                        <th className="text-center py-3 px-4 text-xs text-gray-600">Quantity</th>
+                        <th className="text-right py-3 px-4 text-xs text-gray-600">Price</th>
+                        <th className="text-right py-3 px-4 text-xs text-gray-600">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedSale.items.map((item, index) => (
+                        <tr key={index} className="border-b border-gray-100">
+                          <td className="py-3 px-4 text-sm text-gray-900">{item.productName}</td>
+                          <td className="py-3 px-4 text-center text-sm text-gray-900">{item.quantity}</td>
+                          <td className="py-3 px-4 text-right text-sm text-gray-900">₱{item.price.toFixed(2)}</td>
+                          <td className="py-3 px-4 text-right text-sm text-[#1a5a1a]">₱{item.subtotal.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Total Summary */}
+              <div className="bg-gradient-to-r from-[#D1EDC5] to-[#a8dfa0] rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#1a5a1a]">Total Amount</span>
+                  <span className="text-2xl text-[#1a5a1a]">₱{selectedSale.total.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center mt-2 text-sm">
+                  <span className="text-[#1a5a1a]">Total Items</span>
+                  <span className="text-[#1a5a1a]">
+                    {selectedSale.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                  </span>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

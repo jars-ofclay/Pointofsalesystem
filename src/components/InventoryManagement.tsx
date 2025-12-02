@@ -3,15 +3,17 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
 import { Product } from '../App';
-import { Plus, Pencil, Trash2, Search, AlertTriangle, FolderOpen, Tag } from 'lucide-react';
+import { Plus, Pencil, Search, AlertTriangle, FolderOpen, Tag, Trash2 } from 'lucide-react';
 
 interface InventoryManagementProps {
   products: Product[];
   onUpdateProducts: (products: Product[]) => void;
+  onAddProduct: (product: Omit<Product, 'id'>) => Promise<Product>;
+  onUpdateProduct: (id: string, updates: Partial<Product>) => Promise<Product>;
 }
 
 const DEFAULT_CATEGORIES = [
@@ -29,7 +31,7 @@ const DEFAULT_CATEGORIES = [
   'Other'
 ];
 
-export function InventoryManagement({ products, onUpdateProducts }: InventoryManagementProps) {
+export function InventoryManagement({ products, onUpdateProducts, onAddProduct, onUpdateProduct }: InventoryManagementProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -100,13 +102,7 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
     setShowAddDialog(true);
   };
 
-  const handleDelete = (productId: string) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      onUpdateProducts(products.filter(p => p.id !== productId));
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const productData = {
@@ -118,19 +114,17 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
       minStock: parseInt(formData.minStock)
     };
 
-    if (editingProduct) {
-      onUpdateProducts(products.map(p =>
-        p.id === editingProduct.id ? { ...p, ...productData } : p
-      ));
-    } else {
-      const newProduct: Product = {
-        id: Date.now().toString(),
-        ...productData
-      };
-      onUpdateProducts([...products, newProduct]);
+    try {
+      if (editingProduct) {
+        await onUpdateProduct(editingProduct.id, productData);
+      } else {
+        await onAddProduct(productData);
+      }
+      setShowAddDialog(false);
+    } catch (error) {
+      console.error('Failed to save product:', error);
+      alert('Failed to save product. Please try again.');
     }
-
-    setShowAddDialog(false);
   };
 
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
@@ -226,7 +220,7 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
                   <th className="text-right py-3 px-4 text-gray-600">Price</th>
                   <th className="text-right py-3 px-4 text-gray-600">Stock</th>
                   <th className="text-left py-3 px-4 text-gray-600">Barcode</th>
-                  <th className="text-right py-3 px-4 text-gray-600">Actions</th>
+                  <th className="text-center py-3 px-4 text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -244,24 +238,15 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
                       </span>
                     </td>
                     <td className="py-3 px-4 text-gray-600">{product.barcode}</td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(product)}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
+                    <td className="py-3 px-4 text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(product)}
+                        className="text-[#1a5a1a] hover:bg-[#f0f9ed]"
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -282,6 +267,9 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+            <DialogDescription>
+              {editingProduct ? 'Update product information below.' : 'Enter product details to add to inventory.'}
+            </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -322,6 +310,7 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
                   id="price"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   required
@@ -333,6 +322,7 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
                 <Input
                   id="stock"
                   type="number"
+                  min="0"
                   value={formData.stock}
                   onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                   required
@@ -357,6 +347,7 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
                 <Input
                   id="minStock"
                   type="number"
+                  min="0"
                   value={formData.minStock}
                   onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
                   required
@@ -381,6 +372,9 @@ export function InventoryManagement({ products, onUpdateProducts }: InventoryMan
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Manage Categories</DialogTitle>
+            <DialogDescription>
+              Add or remove product categories for your inventory.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
