@@ -152,7 +152,6 @@
     --radius-3xl: 1.5rem;
     --drop-shadow-lg: 0 4px 4px #00000026;
     --animate-spin: spin 1s linear infinite;
-    --animate-pulse: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
     --blur-sm: 8px;
     --blur-3xl: 64px;
     --default-transition-duration: .15s;
@@ -621,10 +620,6 @@
     margin-top: calc(var(--spacing) * 4);
   }
 
-  .mt-5 {
-    margin-top: calc(var(--spacing) * 5);
-  }
-
   .mt-6 {
     margin-top: calc(var(--spacing) * 6);
   }
@@ -827,10 +822,6 @@
     min-height: 100vh;
   }
 
-  .w-2 {
-    width: calc(var(--spacing) * 2);
-  }
-
   .w-2\/3 {
     width: 66.6667%;
   }
@@ -936,10 +927,6 @@
 
   .transform {
     transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
-  }
-
-  .animate-pulse {
-    animation: var(--animate-pulse);
   }
 
   .animate-spin {
@@ -1244,20 +1231,12 @@
     background-color: #3f9651;
   }
 
-  .bg-\[\#4A7C3A\] {
-    background-color: #4a7c3a;
-  }
-
   .bg-\[\#4A7C3A\]\/10 {
     background-color: oklab(53.452% -.0831212 .0733072 / .1);
   }
 
   .bg-\[\#4a9d5f\] {
     background-color: #4a9d5f;
-  }
-
-  .bg-\[\#7BA568\] {
-    background-color: #7ba568;
   }
 
   .bg-\[\#C8E6A0\]\/20 {
@@ -1666,10 +1645,6 @@
     padding-inline: calc(var(--spacing) * 6);
   }
 
-  .px-8 {
-    padding-inline: calc(var(--spacing) * 8);
-  }
-
   .py-0\.5 {
     padding-block: calc(var(--spacing) * .5);
   }
@@ -1692,10 +1667,6 @@
 
   .py-4 {
     padding-block: calc(var(--spacing) * 4);
-  }
-
-  .py-5 {
-    padding-block: calc(var(--spacing) * 5);
   }
 
   .py-6 {
@@ -3449,12 +3420,6 @@ html {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-  50% {
-    opacity: .5;
   }
 }
 
