@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { User, Product, Sale } from '../App';
-import { InventoryManagement } from './InventoryManagement';
+import { ProductsManagement } from './ProductsManagement';
+import { InventoryTracking } from './InventoryTracking';
 import { ReportsPage } from './ReportsPage';
 import { SalesTransaction } from './SalesTransaction';
-import { LogOut, LayoutDashboard, Package, FileText, ShoppingCart, TrendingUp, AlertTriangle } from 'lucide-react';
+import { LogOut, LayoutDashboard, Package, FileText, ShoppingCart, TrendingUp, AlertTriangle, Boxes } from 'lucide-react';
 import logo from 'figma:asset/8c32421308dbead2a9bc5c95bda6fc66a5652a08.png';
 
 interface AdminDashboardProps {
@@ -87,6 +88,13 @@ export function AdminDashboard({
             >
               <ShoppingCart className="size-4 mr-2" />
               POS
+            </TabsTrigger>
+            <TabsTrigger 
+              value="products" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#4A7C3A] data-[state=active]:to-[#5B8A47] data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
+            >
+              <Boxes className="size-4 mr-2" />
+              Products
             </TabsTrigger>
             <TabsTrigger 
               value="inventory" 
@@ -211,12 +219,18 @@ export function AdminDashboard({
             />
           </TabsContent>
 
-          <TabsContent value="inventory">
-            <InventoryManagement
+          <TabsContent value="products">
+            <ProductsManagement
               products={products}
               onUpdateProducts={onUpdateProducts}
               onAddProduct={onAddProduct}
               onUpdateProduct={onUpdateProduct}
+            />
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <InventoryTracking
+              products={products}
             />
           </TabsContent>
 

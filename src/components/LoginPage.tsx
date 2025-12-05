@@ -98,13 +98,7 @@ export function LoginPage({ onLogin, onGoToSignUp }: LoginPageProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <button 
-                  type="button" 
-                  className="text-[#4A7C3A] hover:text-[#2D5016] transition-colors"
-                >
-                  Forgot password?
-                </button>
+              <div className="flex items-center justify-end">
                 <button 
                   type="button"
                   onClick={onGoToSignUp} 

@@ -294,11 +294,74 @@ app.post('/make-server-6f1f8962/sales', async (c) => {
 // Initialize with demo data
 app.post('/make-server-6f1f8962/initialize', async (c) => {
   try {
-    // Check if already initialized
-    const existingProducts = await kv.getByPrefix('product:');
-    if (existingProducts && existingProducts.length > 0) {
-      return c.json({ message: 'Already initialized' });
+    // Check if users already exist
+    const existingAdmin = await kv.get('user:admin');
+    if (existingAdmin) {
+      console.log('Demo users already exist, skipping user creation');
+      
+      // Still create products if they don't exist
+      const existingProducts = await kv.getByPrefix('product:');
+      if (!existingProducts || existingProducts.length === 0) {
+        // Create demo products (code below)
+        const demoProducts = [
+          {
+            name: 'Rice 25kg',
+            category: 'Groceries',
+            price: 1250,
+            stock: 50,
+            barcode: '8901234567890',
+            minStock: 10
+          },
+          {
+            name: 'Cooking Oil 1L',
+            category: 'Groceries',
+            price: 180,
+            stock: 30,
+            barcode: '8901234567891',
+            minStock: 5
+          },
+          {
+            name: 'Sugar 1kg',
+            category: 'Groceries',
+            price: 65,
+            stock: 45,
+            barcode: '8901234567892',
+            minStock: 10
+          },
+          {
+            name: 'Coffee 3-in-1 Pack',
+            category: 'Beverages',
+            price: 120,
+            stock: 60,
+            barcode: '8901234567893',
+            minStock: 15
+          },
+          {
+            name: 'Instant Noodles Pack',
+            category: 'Food',
+            price: 85,
+            stock: 100,
+            barcode: '8901234567894',
+            minStock: 20
+          }
+        ];
+
+        for (const product of demoProducts) {
+          const productId = generateId();
+          const newProduct = {
+            ...product,
+            id: productId,
+            createdAt: new Date().toISOString()
+          };
+          await kv.set(`product:${productId}`, newProduct);
+        }
+        console.log('Demo products created');
+      }
+      
+      return c.json({ success: true, message: 'Already initialized' });
     }
+
+    console.log('Starting initialization - creating demo users and products...');
 
     // Create demo users
     const demoUsers = [
@@ -319,6 +382,8 @@ app.post('/make-server-6f1f8962/initialize', async (c) => {
     ];
 
     for (const user of demoUsers) {
+      console.log(`Creating user: ${user.username}`);
+      
       // Create in Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: user.email,
@@ -331,7 +396,11 @@ app.post('/make-server-6f1f8962/initialize', async (c) => {
         }
       });
 
-      if (!authError && authData) {
+      if (authError) {
+        console.error(`Error creating user ${user.username} in Supabase Auth:`, authError);
+        // Continue even if user creation fails (might already exist)
+      } else if (authData) {
+        console.log(`User ${user.username} created in Supabase Auth with ID: ${authData.user.id}`);
         const userData = {
           id: authData.user.id,
           username: user.username,
@@ -342,6 +411,7 @@ app.post('/make-server-6f1f8962/initialize', async (c) => {
         };
         await kv.set(`user:${user.username}`, userData);
         await kv.set(`user:id:${authData.user.id}`, userData);
+        console.log(`User ${user.username} saved to KV store`);
       }
     }
 

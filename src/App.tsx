@@ -60,9 +60,17 @@ function App() {
         const initialized = localStorage.getItem('pos_initialized');
         if (!initialized) {
           console.log('Initializing demo data...');
-          await initializeDemoData();
+          const result = await initializeDemoData();
+          console.log('Demo data initialization result:', result);
           localStorage.setItem('pos_initialized', 'true');
           console.log('Demo data initialized successfully');
+          console.log('Demo credentials - Admin: username="admin", password="admin123"');
+          console.log('Demo credentials - Cashier: username="cashier", password="cashier123"');
+        } else {
+          console.log('System already initialized');
+          console.log('Use these credentials to login:');
+          console.log('Admin: username="admin", password="admin123"');
+          console.log('Cashier: username="cashier", password="cashier123"');
         }
 
         // Check for existing session
@@ -73,6 +81,8 @@ function App() {
         }
       } catch (error) {
         console.error('App initialization error:', error);
+        // Clear initialization flag if there was an error, so it can retry next time
+        localStorage.removeItem('pos_initialized');
       } finally {
         setIsLoading(false);
       }
