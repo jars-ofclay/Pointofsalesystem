@@ -4,7 +4,6 @@ import { Input } from './ui/input';
 import { User } from '../App';
 import { AlertCircle, CheckCircle2, ShoppingCart } from 'lucide-react';
 import { Alert, AlertDescription } from './ui/alert';
-import { healthCheck } from '../utils/api';
 import logo from 'figma:asset/8c32421308dbead2a9bc5c95bda6fc66a5652a08.png';
 
 interface LoginPageProps {
@@ -17,24 +16,6 @@ export function LoginPage({ onLogin, onGoToSignUp }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-
-  useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        const health = await healthCheck();
-        if (health.status === 'ok') {
-          setBackendStatus('connected');
-        } else {
-          setBackendStatus('error');
-        }
-      } catch (error) {
-        setBackendStatus('error');
-      }
-    };
-
-    checkBackend();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,11 +124,6 @@ export function LoginPage({ onLogin, onGoToSignUp }: LoginPageProps) {
             </form>
           </div>
         </div>
-
-        {/* Footer text */}
-        <p className="text-center mt-6 text-[#5B7A4A]">
-          Powered by Alok Dixit's POS System
-        </p>
       </div>
     </div>
   );

@@ -3,7 +3,6 @@ import { LoginPage } from './components/LoginPage';
 import { SignUpPage } from './components/SignUpPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { CashierInterface } from './components/CashierInterface';
-import { BackendStatus } from './components/BackendStatus';
 import { authAPI, productsAPI, salesAPI, initializeDemoData, healthCheck, setAccessToken } from './utils/api';
 
 export interface User {
@@ -218,7 +217,6 @@ function App() {
           />
         )}
       </div>
-      <BackendStatus />
     </>
   );
 }
