@@ -128,6 +128,7 @@ export function InventoryTracking({ products, onUpdateProduct }: InventoryTracki
   const [adjustmentForm, setAdjustmentForm] = useState({
     productId: '',
     quantity: '',
+    movementType: 'adjustment' as 'adjustment' | 'purchase' | 'return' | 'damage',
     reason: '',
     notes: ''
   });
@@ -233,7 +234,7 @@ export function InventoryTracking({ products, onUpdateProduct }: InventoryTracki
         id: Date.now().toString(),
         productId: adjustmentForm.productId,
         productName: selectedProduct.name,
-        movementType: 'adjustment',
+        movementType: adjustmentForm.movementType,
         quantity: quantity,
         quantityBefore: selectedProduct.stock,
         quantityAfter: selectedProduct.stock + quantity,
@@ -246,7 +247,7 @@ export function InventoryTracking({ products, onUpdateProduct }: InventoryTracki
       
       setMovements([newMovement, ...movements]);
       setShowAddAdjustment(false);
-      setAdjustmentForm({ productId: '', quantity: '', reason: '', notes: '' });
+      setAdjustmentForm({ productId: '', quantity: '', movementType: 'adjustment', reason: '', notes: '' });
     } catch (error) {
       console.error('Error updating product stock:', error);
       alert('Failed to update stock. Please try again.');
@@ -559,7 +560,7 @@ export function InventoryTracking({ products, onUpdateProduct }: InventoryTracki
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product" className="text-right">
+                  <Label htmlFor="product" className="text-left">
                     Product
                   </Label>
                   <Select
@@ -579,7 +580,7 @@ export function InventoryTracking({ products, onUpdateProduct }: InventoryTracki
                   </Select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="quantity" className="text-right">
+                  <Label htmlFor="quantity" className="text-left">
                     Quantity
                   </Label>
                   <div className="col-span-3">
@@ -596,7 +597,28 @@ export function InventoryTracking({ products, onUpdateProduct }: InventoryTracki
                   </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="reason" className="text-right">
+                  <Label htmlFor="movementType" className="text-left whitespace-nowrap">
+                    Movement Type
+                  </Label>
+                  <Select
+                    value={adjustmentForm.movementType}
+                    onValueChange={(value: 'adjustment' | 'purchase' | 'return' | 'damage') => 
+                      setAdjustmentForm({ ...adjustmentForm, movementType: value })
+                    }
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select movement type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="adjustment">Adjustment</SelectItem>
+                      <SelectItem value="purchase">Purchase</SelectItem>
+                      <SelectItem value="return">Return</SelectItem>
+                      <SelectItem value="damage">Damage</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="reason" className="text-left">
                     Reason
                   </Label>
                   <Input
@@ -608,7 +630,7 @@ export function InventoryTracking({ products, onUpdateProduct }: InventoryTracki
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="notes" className="text-right">
+                  <Label htmlFor="notes" className="text-left">
                     Notes
                   </Label>
                   <Textarea
