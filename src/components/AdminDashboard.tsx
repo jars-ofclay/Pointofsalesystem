@@ -231,6 +231,7 @@ export function AdminDashboard({
           <TabsContent value="inventory">
             <InventoryTracking
               products={products}
+              onUpdateProduct={onUpdateProduct}
             />
           </TabsContent>
 

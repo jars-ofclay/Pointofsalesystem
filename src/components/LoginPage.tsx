@@ -46,13 +46,13 @@ export function LoginPage({ onLogin, onGoToSignUp }: LoginPageProps) {
             <div className="relative">
               <img 
                 src={logo} 
-                alt="Point of Sale Logo" 
+                alt="POSCart Logo" 
                 className="w-40 h-40 mx-auto drop-shadow-lg object-contain"
                 style={{ mixBlendMode: 'multiply' }}
               />
             </div>
           </div>
-          <h1 className="text-[#2D5016] mb-2">Point of Sale</h1>
+          <h1 className="text-[#2D5016] mb-2">POSCart</h1>
           <p className="text-[#5B7A4A]">
             Welcome back! Please login to continue
           </p>

@@ -41,7 +41,7 @@ export function ReceiptModal({
         <div id="receipt" className="bg-white p-6 space-y-4">
           {/* Header */}
           <div className="text-center border-b border-gray-300 pb-4">
-            <h2 className="text-xl text-gray-900 mb-1">Point of Sale System</h2>
+            <h2 className="text-xl text-gray-900 mb-1">POSCart System</h2>
             <p className="text-sm text-gray-600">Alok Dixit's Business</p>
             <p className="text-xs text-gray-500">Thank you for your purchase!</p>
           </div>

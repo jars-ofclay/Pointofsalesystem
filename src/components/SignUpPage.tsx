@@ -79,7 +79,7 @@ export function SignUpPage({ onSignUp, onBackToLogin }: SignUpPageProps) {
             <div className="relative">
               <img 
                 src={logo} 
-                alt="Point of Sale Logo" 
+                alt="POSCart Logo" 
                 className="w-40 h-40 mx-auto drop-shadow-lg object-contain"
                 style={{ mixBlendMode: 'multiply' }}
               />
