@@ -28,7 +28,8 @@ const DEFAULT_CATEGORIES = [
   'Fruits & Vegetables',
   'Personal Care',
   'Household',
-  'Other'
+  'Baby Products',
+  'Toiletries/Hygiene'
 ];
 
 export function ProductsManagement({ products, onUpdateProducts, onAddProduct, onUpdateProduct }: ProductsManagementProps) {

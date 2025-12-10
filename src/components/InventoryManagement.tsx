@@ -28,7 +28,8 @@ const DEFAULT_CATEGORIES = [
   'Fruits & Vegetables',
   'Personal Care',
   'Household',
-  'Other'
+  'Baby Products',
+  'Toiletries/Hygiene'
 ];
 
 export function InventoryManagement({ products, onUpdateProducts, onAddProduct, onUpdateProduct }: InventoryManagementProps) {
